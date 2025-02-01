@@ -29,6 +29,7 @@ public class MemberController {
     @GetMapping("/members")
     public String  list(Model model) {
 
+        model.addAttribute("totalPages", 1);
         model.addAttribute("posts", memberService.findAll());
         model.addAttribute("title", "사용자관라-리스트" );
 /*        model.addAttribute("page", defaultVO.getPage());

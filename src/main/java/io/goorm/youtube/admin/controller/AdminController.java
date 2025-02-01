@@ -82,7 +82,9 @@ public class AdminController {
     @GetMapping("/admins")
     public String list(Model model) {
 
+
         model.addAttribute("posts", adminService.findAll());
+        model.addAttribute("totalPages", 1);
         model.addAttribute("title", "관리자관라-리스트" );
 
         return "mgr/admin/list";
@@ -122,6 +124,9 @@ public class AdminController {
     //생성
     @PostMapping("/admins")
     public String create(@ModelAttribute Admin admin, Model model) {
+
+        String encryptedPassword = PasswordUtil.encryptPassword(admin.getAdminPw());
+        admin.setAdminPw(encryptedPassword);
 
         adminService.save(admin);
 

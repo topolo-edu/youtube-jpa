@@ -3,17 +3,18 @@ package io.goorm.youtube.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.util.List;
 
 @Setter
 @Getter
 @Entity
-@Table(name = "MEMBER")
+@DynamicInsert
 public class Member {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberSeq;
 
     private String memberId;

@@ -133,7 +133,7 @@ public class MemberController {
             member.setMemberPw("");
 
             // 모델에 추가
-            model.addAttribute("post", member);
+            model.addAttribute("member", member);
             model.addAttribute("title", "사용자관라-상세화면" );
 
         } else {
