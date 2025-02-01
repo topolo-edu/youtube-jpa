@@ -1,0 +1,19 @@
+<!-- fragments/pagination.html -->
+<div th:fragment="paginationFragment">
+    <div class="mt-4 text-center">
+        <ul style="display: inline-block;">
+            <li th:if="${page > 1}">
+                <a th:href="@{?page=${page - 1}}">이전</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(1, totalPages)}">
+                <a th:href="@{'/mgr/admins?page=' + ${i}}"
+                   th:classappend="${page == i} ? 'active'">
+                    [[${i}]]
+                </a>
+            </li>
+            <li th:if="${page < totalPages}">
+                <a th:href="@{?page=${page + 1}}">다음</a>
+            </li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/home-layout}">
+
+<div layout:fragment="content" class="mt-8">
+
+    <div class="max-w-md mx-auto mt-10 bg-white p-8 rounded shadow">
+
+    <h1>오류가 발생하였습니다.</h1>
+    <div th:text="${errormsg}"></div>
+
+    </div>
+</div>
+</html>
