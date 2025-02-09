@@ -24,12 +24,6 @@ public class Video {
     private String title;
     private String content;
 
-    @OneToMany(mappedBy = "memberSeq", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Member> Member;
-
-    @Transient
-    private String channelName;
-
     private int publishYn;
     private String deleteYn;
 

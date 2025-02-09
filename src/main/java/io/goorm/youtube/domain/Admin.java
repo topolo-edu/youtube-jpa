@@ -24,11 +24,5 @@ public class Admin  {
 
     private String regSeq;
 
-    @OneToMany(mappedBy = "memberSeq", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Member> Member;
-
-    @Transient
-    private String regName;
-
     private String regDate;
 }

@@ -30,11 +30,9 @@ public class Member {
     private String useYn;
     private String regDate;
 
-    @OneToMany(mappedBy = "memberSeq", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "member_seq") // VIDEO 테이블에 외래키(member_seq) 생성
     private List<Video> videos;
-
-    @Transient
-    private int videoCnt;
 
 
 }
