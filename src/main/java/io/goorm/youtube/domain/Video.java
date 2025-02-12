@@ -1,9 +1,10 @@
 package io.goorm.youtube.domain;
 
+import io.goorm.youtube.enums.DeleteStatus;
+import io.goorm.youtube.enums.PublishStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.DynamicInsert;
 
 import java.util.List;
 
@@ -11,8 +12,13 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
-@DynamicInsert
 public class Video {
+
+    public Video() {
+        this.deleteYn = "N";
+        this.publishYn = 0;
+        this.member_seq = 10L;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +31,10 @@ public class Video {
     private String content;
 
     private int publishYn;
+
     private String deleteYn;
 
-    private String memberSeq;
-
+    private Long member_seq;
     private String regDate;
 
 

@@ -5,12 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
 @Getter
 @Entity
-@DynamicInsert
 public class Member {
 
     @Id
@@ -30,9 +30,8 @@ public class Member {
     private String useYn;
     private String regDate;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "member_seq") // VIDEO 테이블에 외래키(member_seq) 생성
-    private List<Video> videos;
-
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "member_seq")
+    private List<Video> videos = new ArrayList<>();
 
 }
