@@ -30,8 +30,12 @@ public class Member {
     private String useYn;
     private String regDate;
 
-    @OneToMany
-    @JoinColumn(name = "member_seq")
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "member_seq",nullable = false)
     private List<Video> videos = new ArrayList<>();
 
+    // 편의 메서드: Member의 videos 리스트에 Video를 추가
+    public void addVideo(Video video) {
+        this.videos.add(video);
+    }
 }

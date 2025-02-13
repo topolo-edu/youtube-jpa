@@ -1,9 +1,8 @@
 package io.goorm.youtube.service.impl;
 
 
-import io.goorm.youtube.admin.VideoCreateDTO;
-import io.goorm.youtube.admin.VideoMainDTO;
-import io.goorm.youtube.admin.VideoResponseDTO;
+import io.goorm.youtube.domain.Member;
+import io.goorm.youtube.repository.MemberRepository;
 import io.goorm.youtube.repository.VideoRepository;
 import io.goorm.youtube.domain.Video;
 import lombok.extern.slf4j.Slf4j;
@@ -23,86 +22,97 @@ public class VideoServiceImpl  {
 
 
     private VideoRepository videoRepository;
+    private MemberRepository memberRepository;
 
     @Autowired
-    public VideoServiceImpl(VideoRepository videoRepository) {
+    public VideoServiceImpl(VideoRepository videoRepository,MemberRepository memberRepository) {
         this.videoRepository = videoRepository;
+        this.memberRepository = memberRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<VideoMainDTO> findIndex() {
 
-        return videoRepository.findIndex();
-    }
+    public Video save(Long memberSeq, Video video) {
 
-    @Transactional(readOnly = true)
-    public Page<VideoMainDTO> findAll(Long memberSeqBySession,Pageable pageable) {
-
-        return videoRepository.findAllByMemberSeqAndDeleteYn(memberSeqBySession,"N", pageable);
-    }
-
-    @Transactional
-    public VideoResponseDTO save(VideoCreateDTO videoCreateDTO) {
-
-        Video video = new Video();
-        BeanUtils.copyProperties(videoCreateDTO, video);
-
-        Video savedVideo = videoRepository.save(video);
-
-        return videoRepository.findVideoByVideoSeq(savedVideo.getVideoSeq())
+        Member member = memberRepository.findById(memberSeq)
                 .orElseThrow(() -> new RuntimeException("등록한 비디오를 찾을 수 없습니다."));
+
+        member.addVideo(video);
+
+        memberRepository.save(member);
+
+        return video;
     }
 
+    public Video save2(Long memberSeq, Video video) {
+        Member member = memberRepository.getReferenceById(memberSeq);  // findById() 대신 getReferenceById() 사용
+        member.addVideo(video);
+
+        return videoRepository.save(video);  // member.save() 대신 video.save()만 호출
+    }
+
+
+    public void testSelect(){
+        Long member_no = 1L;
+        Optional<Member> result = memberRepository.findById(member_no);
+        System.out.println("=============================");
+        if(result.isPresent()){
+            Member member = result.get();
+            System.out.println(member);
+        }
+    }
 
 
     @Transactional
-    public void  update(Long id, VideoCreateDTO updateDto) {
-
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
-
-        // null이 아닌 값만 업데이트
-        if (updateDto.getVideo() != null) {
-            video.setVideo(updateDto.getVideo());
-        }
-        if (updateDto.getVideoThumnail() != null) {
-            video.setVideoThumnail(updateDto.getVideoThumnail());
-        }
-        if (updateDto.getContent() != null) {
-            video.setContent(updateDto.getContent());
-        }
-        if (updateDto.getTitle() != null) {
-            video.setTitle(updateDto.getTitle());
-        }
-
-        // videoRepository.save(video); // 명시적으로 호출할 필요가 없음
-
-    }
-
-    @Transactional(readOnly = true)
-    public VideoResponseDTO getVideoById(Long id) {
-        return videoRepository.findVideoByVideoSeq(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
+    public void testSelect2(){
+        Long member_no = 1L;
+        Member result_get = memberRepository.getReferenceById(member_no);
+        System.out.println("=============================");
+        System.out.println(result_get);
     }
 
     @Transactional
-    public void  updatePublishYn(Long id) {
+    public void testSelect3(){
+        Long member_no = 1L;
+        Member result_get = memberRepository.getReferenceById(member_no);
+        System.out.println("=============================");
 
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
+        System.out.println(result_get.getMemberSeq());
+    }
 
-        video.setPublishYn(video.getPublishYn() == 1 ? 0 : 1);
+    @Transactional
+    public void getReferenceByIdTest() {
+        System.out.println("=== Before getReferenceById ===");
 
-        // videoRepository.save(video); // 명시적으로 호출할 필요가 없음
+        Member member = memberRepository.getReferenceById(1L);
+
+        //Member member = memberRepository.findById(1L).orElseThrow(() -> new RuntimeException("등록한 비디오를 찾을 수 없습니다."));
+
+        System.out.println("=== After getReferenceById ===");
+        System.out.println("member class: " + member.getClass().getName());
+
+        System.out.println("=== Before accessing member property ===");
+
+        String memberId = member.getMemberId();
+
+        System.out.println("=== After accessing member property ===");
 
     }
 
     @Transactional
-    public void delete(Long id) {
-        // 엔티티 존재 여부를 확인 후 삭제
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
+    public void getReferenceByIdTest2() {
 
-        videoRepository.delete(video);
+        System.out.println("=== Before findById ===");
+
+        Member member2 = memberRepository.findById(1L).orElseThrow(() -> new RuntimeException("등록한 비디오를 찾을 수 없습니다."));
+
+        System.out.println("=== After findById ===");
+        System.out.println("member class: " + member2.getClass().getName());
+
+        System.out.println("=== Before accessing member2 property ===");
+
+        String memberId2 = member2.getMemberId();
+
+        System.out.println("=== After accessing member2 property ===");
     }
+
 }

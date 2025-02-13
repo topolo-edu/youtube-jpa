@@ -35,9 +35,6 @@ public class Video {
     private int publishYn;
     private String deleteYn;
 
-    @Column(name = "member_seq", nullable = false)
-    private Long memberSeq;
-
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime regDate;
