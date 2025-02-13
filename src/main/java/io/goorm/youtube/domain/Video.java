@@ -20,8 +20,6 @@ public class Video {
     public Video() {
         this.publishYn = 0;
         this.deleteYn = "N";
-
-        this.member_seq = 1L;
     }
 
     @Id
@@ -37,7 +35,8 @@ public class Video {
     private int publishYn;
     private String deleteYn;
 
-    private Long member_seq;
+    @Column(name = "member_seq", nullable = false)
+    private Long memberSeq;
 
     @CreatedDate
     @Column(updatable = false)

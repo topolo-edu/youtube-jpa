@@ -15,4 +15,6 @@ public class VideoCreateDTO {
     String content;
     String title;
 
+    Long memberSeq;
+
 }

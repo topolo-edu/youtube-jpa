@@ -17,7 +17,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("SELECT v FROM Video v WHERE v.deleteYn = 'N' AND v.publishYn = 1 ORDER BY v.regDate DESC")
     List<VideoMainDTO> findIndex();
 
-    Page<VideoMainDTO> findAllByDeleteYn(String deleteYn, Pageable pageable);
+    Page<VideoMainDTO> findAllByMemberSeqAndDeleteYn(Long memberSeq,String deleteYn, Pageable pageable);
 
     Optional<VideoResponseDTO> findVideoByVideoSeq(Long id);
 

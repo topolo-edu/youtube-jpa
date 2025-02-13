@@ -36,9 +36,9 @@ public class VideoServiceImpl  {
     }
 
     @Transactional(readOnly = true)
-    public Page<VideoMainDTO> findAll(Pageable pageable) {
+    public Page<VideoMainDTO> findAll(Long memberSeqBySession,Pageable pageable) {
 
-        return videoRepository.findAllByDeleteYn("N", pageable);
+        return videoRepository.findAllByMemberSeqAndDeleteYn(memberSeqBySession,"N", pageable);
     }
 
     @Transactional

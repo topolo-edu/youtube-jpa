@@ -4,7 +4,9 @@ import io.goorm.youtube.admin.VideoCreateDTO;
 import io.goorm.youtube.admin.VideoMainDTO;
 import io.goorm.youtube.admin.VideoResponseDTO;
 import io.goorm.youtube.commom.util.FileUploadUtil;
+import io.goorm.youtube.commom.util.SessionUtils;
 import io.goorm.youtube.service.impl.VideoServiceImpl;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -31,11 +35,21 @@ public class VideoController {
 
     //본인리스트
     @GetMapping("/me/videos")
-    public ResponseEntity<Page<VideoMainDTO>> list(
-            @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable
+    public ResponseEntity<?> list(
+            @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable, HttpSession session
     ) {
 
-        return ResponseEntity.ok(videoService.findAll(pageable));
+        Long memberSeqBySession = SessionUtils.getMemberSeq(session);
+
+        if (memberSeqBySession == null) {
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "로그인이 필요합니다.");
+            return ResponseEntity.badRequest().body(response);
+
+        }
+
+        return ResponseEntity.ok(videoService.findAll(memberSeqBySession,pageable));
 
     }
 
@@ -51,9 +65,21 @@ public class VideoController {
     @PostMapping("/me/videos")
     public ResponseEntity<?> create(@ModelAttribute VideoCreateDTO videoCreateDTO,
                          @RequestParam("videoFile") MultipartFile videoFile,
-                         @RequestParam("videoThumnailFile") MultipartFile videoThumbnailFile) {
+                         @RequestParam("videoThumnailFile") MultipartFile videoThumbnailFile, HttpSession session) {
 
         try {
+
+            Long memberSeqBySession = SessionUtils.getMemberSeq(session);
+
+            if (memberSeqBySession == null) {
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "로그인이 필요합니다.");
+                return ResponseEntity.badRequest().body(response);
+
+            }
+
+            videoCreateDTO.setMemberSeq(memberSeqBySession);
 
             // 업로드된 파일 처리
             String thumbnailPath = FileUploadUtil.uploadFile(videoThumbnailFile, "thumbnail");
