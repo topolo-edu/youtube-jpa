@@ -1,48 +1,39 @@
 package io.goorm.youtube.controller;
 
-import io.goorm.youtube.service.VideoService;
+import io.goorm.youtube.admin.VideoMainDTO;
+import io.goorm.youtube.service.impl.VideoServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Locale;
 
 @Slf4j
-@Controller
+@RestController
+@RequestMapping("/api")
 public class IndexController {
 
     @Autowired
     private MessageSource messageSource;
 
-    private final VideoService videoService;
+    private final VideoServiceImpl videoService;
 
     @Autowired
-    public IndexController(VideoService videoService) {
+    public IndexController(VideoServiceImpl videoService) {
         this.videoService = videoService;
     }
 
     //메인화면
     @GetMapping("")
-    public String  index(Model model) {
+    public ResponseEntity<List<VideoMainDTO>> index() {
 
-        String message = messageSource.getMessage("login.button", null, Locale.getDefault());
-
-        log.debug("message",message);
-
-        model.addAttribute("videos", videoService.findIndex());
-
-        return "index";
+        return ResponseEntity.ok(videoService.findIndex());
     }
 
-    @GetMapping("/errorPage")
-    public String errorPage(Model model) {
-
-        log.debug("errorPage");
-
-        return "errorPage";
-    }
 
 }

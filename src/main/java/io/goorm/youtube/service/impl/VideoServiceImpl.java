@@ -1,19 +1,23 @@
 package io.goorm.youtube.service.impl;
 
 
-import io.goorm.youtube.domain.Member;
+import io.goorm.youtube.admin.VideoCreateDTO;
+import io.goorm.youtube.admin.VideoMainDTO;
 import io.goorm.youtube.repository.VideoRepository;
 import io.goorm.youtube.domain.Video;
-import io.goorm.youtube.service.VideoService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@org.springframework.stereotype.Service
-public class VideoServiceImpl implements VideoService {
+@Service
+public class VideoServiceImpl  {
 
 
     private VideoRepository videoRepository;
@@ -23,25 +27,38 @@ public class VideoServiceImpl implements VideoService {
         this.videoRepository = videoRepository;
     }
 
-    public List<Video> findIndex() {
+    public List<VideoMainDTO> findIndex() {
 
-        return videoRepository.findAll();
+        return videoRepository.findIndex();
     }
 
-    public List<Video> findAll() {
 
-        return videoRepository.findAll();
+    public Page<VideoMainDTO> findAll(Pageable pageable) {
+
+        return videoRepository.findAllByDeleteYn("N", pageable);
     }
+
+
+    public VideoCreateDTO save(VideoCreateDTO videoCreateDTO) {
+
+        Video video = new Video();
+        BeanUtils.copyProperties(videoCreateDTO, video);
+
+        Video savedVideo = videoRepository.save(video);
+
+        return videoRepository.findVideoByVideoSeq(savedVideo.getVideoSeq())
+                .orElseThrow(() -> new RuntimeException("등록한 비디오를 찾을 수 없습니다."));
+    }
+
+
+    /*
 
     public Optional<Video> find(Long videoSeq) {
 
         return videoRepository.findById(videoSeq);
     }
 
-    public Video save(Video video) {
 
-        return videoRepository.save(video);
-    }
 
     public Video update(Video video) {
 
@@ -77,6 +94,6 @@ public class VideoServiceImpl implements VideoService {
 
         return videoRepository.save(existingVideo);
 
-    }
+    }*/
 
 }

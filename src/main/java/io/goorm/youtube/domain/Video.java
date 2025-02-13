@@ -11,8 +11,14 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
-@DynamicInsert
 public class Video {
+
+    public Video() {
+        this.publishYn = 0;
+        this.deleteYn = "N";
+
+        this.member_seq = 5L;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +33,7 @@ public class Video {
     private int publishYn;
     private String deleteYn;
 
-    private String memberSeq;
+    private Long member_seq;
 
     private String regDate;
 
