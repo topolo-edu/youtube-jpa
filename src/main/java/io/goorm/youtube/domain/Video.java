@@ -3,21 +3,25 @@ package io.goorm.youtube.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.DynamicInsert;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
 @Setter
 @Getter
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Video {
 
     public Video() {
         this.publishYn = 0;
         this.deleteYn = "N";
 
-        this.member_seq = 5L;
+        this.member_seq = 1L;
     }
 
     @Id
@@ -35,7 +39,17 @@ public class Video {
 
     private Long member_seq;
 
-    private String regDate;
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime regDate;
 
+    @Column(nullable = true)
+    private LocalDateTime updateDate;
+
+
+    @PreUpdate
+    public void onPreUpdate() {
+        this.updateDate = LocalDateTime.now();
+    }
 
 }

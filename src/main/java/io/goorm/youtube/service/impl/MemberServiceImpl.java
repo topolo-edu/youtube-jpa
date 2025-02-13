@@ -4,12 +4,13 @@ import io.goorm.youtube.repository.MemberRepository;
 import io.goorm.youtube.domain.Member;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@org.springframework.stereotype.Service
+@Service
 public class MemberServiceImpl  {
 
 
@@ -66,11 +67,7 @@ public class MemberServiceImpl  {
         }*/
 
 
-        if (existingMember != null && existingMember.getUseYn().equals("N")) {
-            existingMember.setUseYn("Y");
-        } else {
-            existingMember.setUseYn("N");
-        }
+        existingMember.setUseYn(existingMember != null && existingMember.getUseYn().equals("N") ? "Y" : "N");
 
         return memberRepository.save(existingMember);
 

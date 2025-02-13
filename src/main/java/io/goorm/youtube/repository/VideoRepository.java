@@ -2,6 +2,7 @@ package io.goorm.youtube.repository;
 
 import io.goorm.youtube.admin.VideoCreateDTO;
 import io.goorm.youtube.admin.VideoMainDTO;
+import io.goorm.youtube.admin.VideoResponseDTO;
 import io.goorm.youtube.domain.Video;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,6 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     Page<VideoMainDTO> findAllByDeleteYn(String deleteYn, Pageable pageable);
 
-    Optional<VideoCreateDTO> findVideoByVideoSeq(Long id);
+    Optional<VideoResponseDTO> findVideoByVideoSeq(Long id);
 
 }
