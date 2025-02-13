@@ -1,6 +1,7 @@
 package io.goorm.youtube.service.impl;
 
 
+import io.goorm.youtube.domain.Member;
 import io.goorm.youtube.domain.Video;
 import io.goorm.youtube.dto.VideoCreateDto;
 import io.goorm.youtube.dto.VideoResponseDto;
@@ -40,7 +41,14 @@ public class VideoServiceImpl {
     public VideoResponseDto save(VideoCreateDto videoCreateDto) {
         // 새로운 엔티티 생성 후 DTO의 값 복사
         Video video = new Video();
+
         BeanUtils.copyProperties(videoCreateDto, video);
+
+/*        Member membTemp= new Member();
+
+        membTemp.setMemberSeq(10L);
+        video.setMember(membTemp);*/
+
 
         // 새 엔티티 등록 (영속화)
         Video savedVideo = videoRepository.save(video);

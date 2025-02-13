@@ -3,24 +3,16 @@ package io.goorm.youtube.controller;
 import io.goorm.youtube.commom.util.FileUploadUtil;
 import io.goorm.youtube.dto.VideoCreateDto;
 import io.goorm.youtube.dto.VideoResponseDto;
-import io.goorm.youtube.domain.Video;
-
 import io.goorm.youtube.service.impl.VideoServiceImpl;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URI;
 
