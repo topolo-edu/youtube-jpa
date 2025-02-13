@@ -1,17 +1,20 @@
 package io.goorm.youtube.controller;
 
+import io.goorm.youtube.admin.MemberUpdateDTO;
 import io.goorm.youtube.commom.util.PasswordUtil;
+import io.goorm.youtube.commom.util.SessionUtils;
 import io.goorm.youtube.domain.Member;
 import io.goorm.youtube.service.impl.MemberServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Optional;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Slf4j
@@ -29,13 +32,16 @@ public class MemberController {
 
     //회원가입
     @PostMapping("/join")
-    public String  join(@ModelAttribute Member member) {
+    public ResponseEntity<?>  join(@ModelAttribute Member member) {
 
+        Map<String, Object> response = new HashMap<>();
 
         // 아이디 중복 검사
         if (memberService.existsById(member.getMemberId())) {
 
-            return "join"; // 중복인 경우 다시 회원가입 폼으로
+            response.put("message", "아이디가 중복 되었습니다.");
+            return ResponseEntity.badRequest().body(response);
+
         }
 
         try {
@@ -46,9 +52,12 @@ public class MemberController {
             // 회원 저장
             memberService.save(member);
 
-            return "redirect:/login"; // 회원가입 성공시 로그인 페이지로 리다이렉트
+            URI location = URI.create("/api/join");
+            return ResponseEntity.created(location).build();
+
         } catch (Exception e) {
-            return "join"; // 예외 발생시 회원가입 폼으로
+            response.put("message", "회원가입에 실패하였습니다." + e.toString());
+            return ResponseEntity.badRequest().body(response);
         }
 
     }
@@ -56,23 +65,26 @@ public class MemberController {
 
     //로그인
     @PostMapping("/login")
-    public String login(@ModelAttribute Member member, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> login(@RequestParam String memberId,
+                                                     @RequestParam String memberPw,
+                                                     HttpSession session) {
 
+        Map<String, Object> response = new HashMap<>();
 
-        Member members = memberService.login(member);
+        Member members = memberService.login(memberId);
 
-        log.debug(member.getMemberId());
-
-        if ( members != null && validateLogin(members.getMemberPw(), member.getMemberPw()) ) {
+        if ( members != null && validateLogin(members.getMemberPw(), memberPw) ) {
 
             log.debug("성공");
             session.setAttribute("member", members);
 
-            return "redirect:/";
+            response.put("message", "로그인에 성공했습니다.");
+            return ResponseEntity.ok(response);
 
         } else {
 
-            return "login";
+            response.put("message", "로그인에 실패하였습니다.");
+            return ResponseEntity.badRequest().body(response);
 
         }
 
@@ -89,23 +101,35 @@ public class MemberController {
 
     //로그아웃
     @GetMapping("/logout")
-    public String logout(HttpSession session, Model model) {
+    public  ResponseEntity<Map<String, Object>> logout(HttpSession session) {
 
         session.invalidate();
 
-        return "redirect:/";
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "로그아웃되었습니다.");
+
+        return ResponseEntity.ok(response);
     }
 
 
 
     //profile수정
-    @PostMapping("/members/{memberSeq}")
-    public String  update(@ModelAttribute Member member, RedirectAttributes redirectAttributes) {
+    @PutMapping("/members")
+    public ResponseEntity<?>  update(@ModelAttribute MemberUpdateDTO memberUpdateDTO, HttpSession session) {
 
-        redirectAttributes.addAttribute("memberSeq", member.getMemberSeq());
-        redirectAttributes.addFlashAttribute("msg", "수정에 성공하였습니다.");
+        Long memberSeqBySession = SessionUtils.getMemberSeq(session);
 
-        return "redirect:/members/{memberSeq}";
+        if (memberSeqBySession != memberUpdateDTO.getMemberSeq()) {
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "본인의 정보가 아닙니다.");
+            return ResponseEntity.badRequest().body(response);
+
+        }
+
+        memberService.update(memberSeqBySession, memberUpdateDTO);
+
+        return ResponseEntity.ok(memberSeqBySession);
 
     }
 
