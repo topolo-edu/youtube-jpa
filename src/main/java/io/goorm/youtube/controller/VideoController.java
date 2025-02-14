@@ -65,7 +65,8 @@ public class VideoController {
     @PostMapping("/me/videos")
     public ResponseEntity<?> create(@ModelAttribute VideoCreateDTO videoCreateDTO,
                          @RequestParam("videoFile") MultipartFile videoFile,
-                         @RequestParam("videoThumnailFile") MultipartFile videoThumbnailFile, HttpSession session) {
+                         @RequestParam("videoThumnailFile") MultipartFile videoThumbnailFile,
+                                    HttpSession session) {
 
         try {
 

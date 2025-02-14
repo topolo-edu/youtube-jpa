@@ -118,6 +118,14 @@ public class MemberController {
 
         Long memberSeqBySession = SessionUtils.getMemberSeq(session);
 
+        if (memberSeqBySession == null) {
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "로그인이 필요합니다.");
+            return ResponseEntity.badRequest().body(response);
+
+        }
+
         if (memberSeqBySession != memberUpdateDTO.getMemberSeq()) {
 
             Map<String, Object> response = new HashMap<>();
