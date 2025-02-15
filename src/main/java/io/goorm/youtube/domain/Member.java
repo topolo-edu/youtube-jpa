@@ -30,7 +30,7 @@ public class Member {
     private String useYn;
     private String regDate;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany
     @JoinColumn(name = "member_seq")
     private List<Video> videos = new ArrayList<>();
 
