@@ -13,6 +13,10 @@ import java.util.List;
 @Entity
 public class Member {
 
+    public Member() {
+
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberSeq;
@@ -33,5 +37,11 @@ public class Member {
     @OneToMany
     @JoinColumn(name = "member_seq")
     private List<Video> videos = new ArrayList<>();
+
+/*    // 연관관계 편의 메서드
+    public void addVideo(Video video) {
+        videos.add(video);
+        video.setMember(this);
+    }*/
 
 }

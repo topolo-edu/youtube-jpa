@@ -1,7 +1,5 @@
 package io.goorm.youtube.domain;
 
-import io.goorm.youtube.enums.DeleteStatus;
-import io.goorm.youtube.enums.PublishStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +16,7 @@ public class Video {
         this.deleteYn = "N";
         this.publishYn = 0;
         this.member_seq = 10L;
+
     }
 
     @Id
@@ -34,8 +33,12 @@ public class Video {
 
     private String deleteYn;
 
-    private Long member_seq;
     private String regDate;
 
+    private Long member_seq;
+
+/*    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_seq")
+    private Member member;*/
 
 }
