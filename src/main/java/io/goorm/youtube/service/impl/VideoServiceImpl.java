@@ -1,108 +1,168 @@
 package io.goorm.youtube.service.impl;
 
-
-import io.goorm.youtube.admin.VideoCreateDTO;
-import io.goorm.youtube.admin.VideoMainDTO;
-import io.goorm.youtube.admin.VideoResponseDTO;
-import io.goorm.youtube.repository.VideoRepository;
+import io.goorm.youtube.dto.VideoCreateDTO;
+import io.goorm.youtube.dto.VideoMainDTO;
+import io.goorm.youtube.dto.VideoResponseDTO;
+import io.goorm.youtube.commom.util.FileUploadUtil;
 import io.goorm.youtube.domain.Video;
+import io.goorm.youtube.repository.VideoRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
-public class VideoServiceImpl  {
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class VideoServiceImpl {
 
+    private final VideoRepository videoRepository;
+    private final FileUploadUtil fileUploadUtil;
 
-    private VideoRepository videoRepository;
-
-    @Autowired
-    public VideoServiceImpl(VideoRepository videoRepository) {
-        this.videoRepository = videoRepository;
-    }
-
-    @Transactional(readOnly = true)
+    /**
+     * 메인 페이지용 비디오 목록 조회
+     */
     public List<VideoMainDTO> findIndex() {
-
         return videoRepository.findIndex();
     }
 
-    @Transactional(readOnly = true)
-    public Page<VideoMainDTO> findAll(Long memberSeqBySession,Pageable pageable) {
-
-        return videoRepository.findAllByMemberSeqAndDeleteYn(memberSeqBySession,"N", pageable);
+    /**
+     * 사용자별 비디오 목록 조회 (페이징)
+     */
+    public Page<VideoMainDTO> findAll(Long memberSeq, Pageable pageable) {
+        return videoRepository.findAllByMemberSeqAndDeleteYn(memberSeq, "N", pageable);
     }
 
+    /**
+     * 비디오 단건 조회
+     */
+    public VideoResponseDTO getVideoBySeq(Long videoSeq) {
+        return videoRepository.findVideoByVideoSeq(videoSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 비디오가 존재하지 않습니다. ID: " + videoSeq));
+    }
+
+    /**
+     * 비디오 업로드 및 저장
+     */
     @Transactional
-    public VideoResponseDTO save(VideoCreateDTO videoCreateDTO) {
+    public VideoResponseDTO save(VideoCreateDTO videoCreateDTO, MultipartFile videoFile, MultipartFile thumbnailFile) {
+        try {
+            // 파일 업로드
+            String videoPath = fileUploadUtil.uploadFile(videoFile, "video");
+            String thumbnailPath = fileUploadUtil.uploadFile(thumbnailFile, "thumbnail");
 
-        Video video = new Video();
-        BeanUtils.copyProperties(videoCreateDTO, video);
+            // 엔티티 생성 및 저장
+            Video video = new Video();
+            video.setVideo(videoPath);
+            video.setVideoThumnail(thumbnailPath);
+            video.setTitle(videoCreateDTO.getTitle());
+            video.setContent(videoCreateDTO.getContent());
+            video.setMemberSeq(videoCreateDTO.getMemberSeq());
+            video.setPublishYn(0);  // 기본값: 비공개
+            video.setDeleteYn("N"); // 기본값: 삭제되지 않음
 
-        Video savedVideo = videoRepository.save(video);
+            Video savedVideo = videoRepository.save(video);
 
-        return videoRepository.findVideoByVideoSeq(savedVideo.getVideoSeq())
-                .orElseThrow(() -> new RuntimeException("등록한 비디오를 찾을 수 없습니다."));
+            return videoRepository.findVideoByVideoSeq(savedVideo.getVideoSeq())
+                    .orElseThrow(() -> new RuntimeException("비디오 저장 후 조회 실패"));
+
+        } catch (Exception e) {
+            log.error("비디오 저장 중 오류 발생", e);
+            throw new RuntimeException("비디오 저장에 실패했습니다: " + e.getMessage());
+        }
     }
 
-
-
+    /**
+     * 비디오 정보 수정
+     */
     @Transactional
-    public void  update(Long id, VideoCreateDTO updateDto) {
+    public void update(Long videoSeq, VideoCreateDTO updateDto,
+                       MultipartFile videoFile, MultipartFile thumbnailFile) {
+        Video video = videoRepository.findById(videoSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 비디오가 존재하지 않습니다."));
 
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
+        try {
+            // 새로운 비디오 파일이 업로드된 경우
+            if (videoFile != null && !videoFile.isEmpty()) {
+                String videoPath = fileUploadUtil.uploadFile(videoFile, "video");
+                // 기존 파일 삭제
+                fileUploadUtil.deleteFile(video.getVideo());
+                video.setVideo(videoPath);
+            }
 
-        // null이 아닌 값만 업데이트
-        if (updateDto.getVideo() != null) {
-            video.setVideo(updateDto.getVideo());
-        }
-        if (updateDto.getVideoThumnail() != null) {
-            video.setVideoThumnail(updateDto.getVideoThumnail());
-        }
-        if (updateDto.getContent() != null) {
-            video.setContent(updateDto.getContent());
-        }
-        if (updateDto.getTitle() != null) {
-            video.setTitle(updateDto.getTitle());
-        }
+            // 새로운 썸네일이 업로드된 경우
+            if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+                String thumbnailPath = fileUploadUtil.uploadFile(thumbnailFile, "thumbnail");
+                // 기존 파일 삭제
+                fileUploadUtil.deleteFile(video.getVideoThumnail());
+                video.setVideoThumnail(thumbnailPath);
+            }
 
-        // videoRepository.save(video); // 명시적으로 호출할 필요가 없음
+            // 나머지 정보 업데이트
+            if (updateDto.getTitle() != null) {
+                video.setTitle(updateDto.getTitle());
+            }
+            if (updateDto.getContent() != null) {
+                video.setContent(updateDto.getContent());
+            }
 
+        } catch (Exception e) {
+            log.error("비디오 수정 중 오류 발생", e);
+            throw new RuntimeException("비디오 수정에 실패했습니다: " + e.getMessage());
+        }
     }
 
-    @Transactional(readOnly = true)
-    public VideoResponseDTO getVideoById(Long id) {
-        return videoRepository.findVideoByVideoSeq(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
-    }
-
+    /**
+     * 비디오 공개/비공개 상태 변경
+     */
     @Transactional
-    public void  updatePublishYn(Long id) {
-
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
+    public void updatePublishYn(Long videoSeq) {
+        Video video = videoRepository.findById(videoSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 비디오가 존재하지 않습니다."));
 
         video.setPublishYn(video.getPublishYn() == 1 ? 0 : 1);
-
-        // videoRepository.save(video); // 명시적으로 호출할 필요가 없음
-
     }
 
+    /**
+     * 비디오 삭제
+     */
     @Transactional
-    public void delete(Long id) {
-        // 엔티티 존재 여부를 확인 후 삭제
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 Video가 존재하지 않습니다."));
+    public void delete(Long videoSeq) {
+        Video video = videoRepository.findById(videoSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 비디오가 존재하지 않습니다."));
 
-        videoRepository.delete(video);
+        try {
+            // 파일 삭제
+            fileUploadUtil.deleteFile(video.getVideo());
+            fileUploadUtil.deleteFile(video.getVideoThumnail());
+
+            // 소프트 삭제 처리
+            video.setDeleteYn("Y");
+        } catch (Exception e) {
+            log.error("비디오 삭제 중 오류 발생", e);
+            throw new RuntimeException("비디오 삭제에 실패했습니다: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 특정 회원의 비디오 존재 여부 확인
+     */
+    public boolean existsByMemberSeq(Long memberSeq) {
+        return videoRepository.existsByMemberSeqAndDeleteYn(memberSeq, "N");
+    }
+
+    /**
+     * 비디오 소유자 확인
+     */
+    public boolean isOwner(Long videoSeq, Long memberSeq) {
+        return videoRepository.findById(videoSeq)
+                .map(video -> video.getMemberSeq().equals(memberSeq))
+                .orElse(false);
     }
 }

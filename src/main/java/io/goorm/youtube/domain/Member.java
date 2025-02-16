@@ -3,7 +3,8 @@ package io.goorm.youtube.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.DynamicInsert;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,10 @@ public class Member {
     private String memberInfo;
 
     private String useYn;
-    private String regDate;
+
+    @Column(name = "reg_date", updatable = false)
+    @CreationTimestamp  // 엔티티 생성 시 자동으로 현재 시간 설정
+    private LocalDateTime regDate;
 
     @OneToMany
     @JoinColumn(name = "member_seq")
