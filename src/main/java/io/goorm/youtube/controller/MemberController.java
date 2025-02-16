@@ -113,7 +113,7 @@ public class MemberController {
 
 
     //profile폼 뷰
-    @GetMapping("/members")
+    @GetMapping("/me/members")
     public String profileForm(HttpSession session, Model model) {
 
 
@@ -142,7 +142,7 @@ public class MemberController {
     }
 
     //profile수정
-    @PostMapping("/members/{memberSeq}")
+    @PostMapping("/me/members/{memberSeq}")
     public String  update(@ModelAttribute Member member, Model model, RedirectAttributes redirectAttributes) {
 
         redirectAttributes.addAttribute("memberSeq", member.getMemberSeq());

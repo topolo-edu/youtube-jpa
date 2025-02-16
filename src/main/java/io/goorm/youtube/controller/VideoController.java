@@ -29,7 +29,7 @@ public class VideoController {
     }
 
     //리스트
-    @GetMapping("/videos")
+    @GetMapping("/me/videos")
     public ResponseEntity<Page<VideoResponseDto>> list(
             @PageableDefault(size = 10, sort = "regDate", direction = Sort.Direction.DESC) Pageable pageable
     ) {
@@ -39,7 +39,7 @@ public class VideoController {
     }
 
     //생성
-    @PostMapping("/videos")
+    @PostMapping("/me/videos")
     public ResponseEntity<?> create( @ModelAttribute VideoCreateDto videoCreateDto,
                           @RequestParam("videoFile") MultipartFile videoFile,
                           @RequestParam("videoThumnailFile") MultipartFile videoThumbnailFile) {
@@ -69,7 +69,7 @@ public class VideoController {
     }
 
     //수정
-    @PutMapping("/videos/{videoSeq}")
+    @PutMapping("/me/videos/{videoSeq}")
     public ResponseEntity<?> update( @PathVariable("videoSeq") Long videoSeq,
                                     @ModelAttribute VideoCreateDto videoUpdateDto,
                                      @RequestParam(value = "videoFile", required = false) MultipartFile videoFile,
@@ -103,14 +103,14 @@ public class VideoController {
     }
 
     //뷰
-    @GetMapping("/videos/{videoSeq}")
+    @GetMapping("/me/videos/{videoSeq}")
     public ResponseEntity<VideoResponseDto>  get(@PathVariable("videoSeq") Long videoSeq) {
 
         return ResponseEntity.ok(videoService.getVideoById(videoSeq));
     }
 
     //뷰
-    @DeleteMapping("/videos/{videoSeq}")
+    @DeleteMapping("/me/videos/{videoSeq}")
     public ResponseEntity<?>  delete(@PathVariable("videoSeq") Long videoSeq) {
 
         videoService.delete(videoSeq);
